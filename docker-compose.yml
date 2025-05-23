@@ -1,0 +1,16 @@
+version: "3.3"
+services:
+  polarization_server:
+    image: "polarization_server"
+    ports:
+      - "5100:5100"
+    volumes:
+      - ./src:/app
+      - ./config:/config
+      - ./logs:/logs
+      - ./cache:/cache
+    stdin_open: true
+    tty: true
+    restart: always
+    command: ["python3", "polarization_server.py"]
+  

@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python
 # coding: utf-8
 import numpy as np
@@ -7,7 +6,6 @@ import pickle
 import hashlib
 from functools import wraps
 from scipy import optimize
-from numba import jit
 import inspect
 
 def file_cache(func, cache_dir='cache'):

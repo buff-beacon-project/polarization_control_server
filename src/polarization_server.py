@@ -4,8 +4,7 @@ import time
 from bellMotors import MotorController
 import numpy as np
 import threading
-import redis_read as r_read
-import os,sys,inspect
+import os
 import yaml as yaml
 import logging
 from zmqhelper import Server
@@ -489,7 +488,7 @@ def main():
     global motorInfo
     global logger
     logger = setup_logger()
-    configFName = 'config/polarization.yaml'
+    configFName = '../config/polarization.yaml'
     config = load_config_from_file(configFName)
     motorInfo = config['server']
 
