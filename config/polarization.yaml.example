@@ -1,0 +1,81 @@
+port: 5100
+server:
+  alice:
+    ip: "132.163.53.101"
+    port: 55000
+    name: "alice"
+  bob:
+    ip: "132.163.53.148"
+    port: 55000
+    name: "bob"
+  source:
+    ip: "132.163.53.14"
+    port: 55000
+    name: "source"
+source:
+  source_power_angle: -65.17
+pockels_cell:
+  alice:
+    jones_avg_static: [[1. + 0.j,  0.02121528-0.03043852j],
+            [-0.01101801-0.04069562j,  1.00694941+0.01825613j]]
+    quarter_wave_voltage: 596.82
+    pc_rot: -45.66
+  bob:
+    jones_avg_static: [[1.+0.j, -0.02198908-0.01899806j],
+            [0.00383058-0.01926662j,  0.99169901+0.02682298j]]
+    quarter_wave_voltage: 622.12
+    pc_rot: -45.64
+bell_angles: [41.6383456, 59.62867712, 33.75116]
+settings:
+  "1":
+    PHWP: 45
+    AHWP1: 0
+    BHWP1: 0
+  "2":
+    PHWP: 0
+    AHWP1: 45
+    BHWP1: 45
+  a_calib:
+    PHWP: 45
+    AHWP1: 45
+    BHWP1: 0
+  b_calib:
+    PHWP: 45
+    AHWP1: 0
+    BHWP1: 45
+  da:
+    PHWP: 22.5
+    AHWP1: -22.5
+    BHWP1: 22.5
+  ad:
+    PHWP: 22.5
+    AHWP1: 22.5
+    BHWP1: -22.5
+  aa:
+    PHWP: 22.5
+    AHWP1: 22.5
+    BHWP1: 22.5
+  dd:
+    PHWP: 22.5
+    AHWP1: -22.5
+    BHWP1: -22.5
+  dhv:
+    PHWP: 22.5
+    AHWP1: 0
+    BHWP1: 45
+  dvh:
+    PHWP: 22.5
+    AHWP1: 45
+    BHWP1: 0
+  d1:
+    PHWP: 22.5
+    AHWP1: 0
+    BHWP1: 0
+  d2:
+    PHWP: 22.5
+    AHWP1: 45
+    BHWP1: 45
+  view_pc:
+    PHWP: 45
+    AHWP1: 45
+    BHWP1: 45
