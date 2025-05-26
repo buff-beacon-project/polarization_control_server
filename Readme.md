@@ -1,5 +1,3 @@
-Readme.md
-
 # Polarization motor control server
 Designed to control the polarization of the various stations in the loophole free Bell test experiment.
 
@@ -27,7 +25,7 @@ To register this service with Prometheus for metrics monitoring, create a `JSON`
 ```
 
 ## Sending commands  
-Commands are sent as a JSON dictionary with the following format: `{'cmd': 'command', {'params': {dictionary of optional parameters}}}`. Sending the command `{'cmd': 'commands', params: {}} will return a list of all available commands.
+Commands are sent as a JSON dictionary with the following format: `{'cmd': 'command', {'params': {dictionary of optional parameters}}}`. Sending the command `{'cmd': 'commands', 'params': {}} will return a list of all available commands.
 
 ## Additional paths  
 In the `polarization.yaml` file, it is possible to add additional paths or polarization settings required.
