@@ -152,18 +152,22 @@ class PolarizationServer(ZMQServiceBase):
             res ={}
             res['error'] = "Error: "+str(e)
         res['message'] = resp
+        res = self.encode_message(res)
         print("\n Sending message", res)
         self.logger.info(f"Sending message: {res}")
-        return self.encode_message(res)
+        return res
+    
         return msgout
     
     def encode_message(self, message):
         # Convert any numpy arrays in the message to lists of strings for JSON serialization
         def convert(obj):
             if isinstance(obj, np.ndarray):
-                return [str(x) for x in obj.tolist()]
-            if isinstance(obj, (np.integer, np.floating)):
-                return str(obj.item())
+                return [x for x in obj.tolist()]
+            if isinstance(obj, np.integer):
+                return int(obj.item())
+            if isinstance(obj, np.floating):
+                return float(obj.item())
             if isinstance(obj, dict):
                 return {k: convert(v) for k, v in obj.items()}
             if isinstance(obj, list):
