@@ -6,7 +6,6 @@ RUN apt-get update && \
      python3 \
      python3-dev \
      python3-pip \
-     python3-pandas \
      python3-scipy \
      libtool pkg-config build-essential autoconf automake \
      libzmq3-dev \
@@ -17,4 +16,3 @@ COPY requirements.txt /app/requirements.txt
 WORKDIR /app
 RUN python3 -m pip install --upgrade pip && \
      pip3 --no-cache-dir install -r requirements.txt
-# Run pip3 --no-cache-dir install git+https://github.com/kshalm/bellanalysishelper

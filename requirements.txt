@@ -3,3 +3,6 @@ git+https://github.com/kshalm/zmqhelpers
 pyzmq
 scipy>=1.1.0
 pyYAML
+redis
+requests
+loguru

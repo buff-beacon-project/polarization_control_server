@@ -1,81 +1,150 @@
-port: 5100
-server:
+bell_angles:
+- 41.6383456
+- 59.62867712
+- 33.75116
+commands:
+  1:
+    cmd: set_polarization:str
+    description: Set the waveplates to select a particular path in the experiment.
+      The command get_paths will return all valid paths. Results are cached. You can
+      optionally override or update the cache.
+    params:
+      setting: which_path_to_use:str
+      update_cache: optional:bool
+      use_cahce: optional:bool,
+  2:
+    cmd: set_power:str
+    description: Set the power of the source.
+    params:
+      power: Number between 0 and 1:float
+  3:
+    cmd: set_pc_to_bell_angles:str
+    description: Set the pockels cell to select a particular path in the experiment.
+      If no angles are provided, the default values stored on the server are used.
+      The command get_paths will return all valid paths. Results are cached. You can
+      optionally override or update the cache.
+    params:
+      angles: optional:[angle_1:float, angle_2:float, angle_3:float]
+      update_cache: optional:bool
+      use_cahce: optional:bool,
+  4:
+    cmd: get_paths:str
+    description: Get all valid paths in the experiment.
+  5:
+    cmd: home:str
+    description: Home the Pockels cells. The party can be either alice, bob, source,
+      or all.
+    params:
+      party: party:str,
+  6:
+    cmd: calibrate:str
+    description: Calibrate the waveplates. Valid parties are alice, bob, or source.
+      Choosing alice or bob will move the waveplates designed to correct polarization
+      errors in the fibers going from the source to alice/bob. Choosing source calibrates
+      the waveplates used to correct the polarization drift in the fiber that the
+      pump laser is coupled into.
+    params:
+      party: party:str,
+  7:
+    cmd: commands:str
+    description: Get all commands available on the server.
+  8:
+    cmd: status:str
+    description: Get the status of the server.
+config_setup:
+  description: Polarization control system in the quantum optics experiment. Set waveplates
+    and pockels cells to control the polarization of the light in the experiment.
+  http_port: 5101
+  loki_host: localhost
+  loki_port: 3100
+  name: Polarization Server
+  redis_host: bellamd1.campus.nist.gov
+  redis_port: 6379
+  register_redis: false
+  req_port: 5100
+  version: 1.0.0
+motor_servers:
   alice:
-    ip: "132.163.53.101"
+    ip: 127.0.0.1
+    name: alice
     port: 55000
-    name: "alice"
   bob:
-    ip: "132.163.53.148"
+    ip: 127.0.0.1
+    name: bob
     port: 55000
-    name: "bob"
   source:
-    ip: "132.163.53.14"
+    ip: 127.0.0.1
+    name: source
     port: 55000
-    name: "source"
-source:
-  source_power_angle: -65.17
 pockels_cell:
   alice:
-    jones_avg_static: [[1. + 0.j,  0.02121528-0.03043852j],
-            [-0.01101801-0.04069562j,  1.00694941+0.01825613j]]
-    quarter_wave_voltage: 596.82
+    jones_avg_static:
+    - - 1. + 0.j
+      - 0.02121528-0.03043852j
+    - - -0.01101801-0.04069562j
+      - 1.00694941+0.01825613j
     pc_rot: -45.66
+    quarter_wave_voltage: 596.82
   bob:
-    jones_avg_static: [[1.+0.j, -0.02198908-0.01899806j],
-            [0.00383058-0.01926662j,  0.99169901+0.02682298j]]
-    quarter_wave_voltage: 622.12
+    jones_avg_static:
+    - - 1.+0.j
+      - -0.02198908-0.01899806j
+    - - 0.00383058-0.01926662j
+      - 0.99169901+0.02682298j
     pc_rot: -45.64
-bell_angles: [41.6383456, 59.62867712, 33.75116]
+    quarter_wave_voltage: 622.12
 settings:
-  "1":
-    PHWP: 45
+  '1':
     AHWP1: 0
     BHWP1: 0
-  "2":
+    PHWP: 45
+  '2':
+    AHWP1: 45
+    BHWP1: 45
     PHWP: 0
-    AHWP1: 45
-    BHWP1: 45
   a_calib:
-    PHWP: 45
     AHWP1: 45
     BHWP1: 0
-  b_calib:
     PHWP: 45
-    AHWP1: 0
-    BHWP1: 45
-  da:
-    PHWP: 22.5
-    AHWP1: -22.5
-    BHWP1: 22.5
-  ad:
-    PHWP: 22.5
-    AHWP1: 22.5
-    BHWP1: -22.5
   aa:
-    PHWP: 22.5
     AHWP1: 22.5
     BHWP1: 22.5
-  dd:
     PHWP: 22.5
+  ad:
+    AHWP1: 22.5
+    BHWP1: -22.5
+    PHWP: 22.5
+  b_calib:
+    AHWP1: 0
+    BHWP1: 45
+    PHWP: 45
+  d1:
+    AHWP1: 0
+    BHWP1: 0
+    PHWP: 22.5
+  d2:
+    AHWP1: 45
+    BHWP1: 45
+    PHWP: 22.5
+  da:
+    AHWP1: -22.5
+    BHWP1: 22.5
+    PHWP: 22.5
+  dd:
     AHWP1: -22.5
     BHWP1: -22.5
+    PHWP: 22.5
   dhv:
-    PHWP: 22.5
     AHWP1: 0
     BHWP1: 45
+    PHWP: 22.5
   dvh:
-    PHWP: 22.5
     AHWP1: 45
     BHWP1: 0
-  d1:
     PHWP: 22.5
-    AHWP1: 0
-    BHWP1: 0
-  d2:
-    PHWP: 22.5
-    AHWP1: 45
-    BHWP1: 45
   view_pc:
-    PHWP: 45
     AHWP1: 45
     BHWP1: 45
+    PHWP: 45
+source:
+  source_power_angle: -69.19607290230897

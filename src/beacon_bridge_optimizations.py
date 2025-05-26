@@ -161,35 +161,54 @@ def set_bridge_to_hwp(hwp_ang, alice=True, off_state_only=False):
     '''given a hwp angle 'x', computes the angles for the
     the bridge to mimic a hwp at angle 'x' preceeding
     a V polarizer.'''
-    optimized = False
-
-    if alice:
+    # optimized = False
+    
+    def optimize_bridge(jones_avg_static, pc_rot):
+        optimized = False
         while not optimized:
             if off_state_only is False:
                 guess = np.array([1.0, 0.0, 0.0, 0.1]) +\
                     np.hstack([10*np.random.random(3), [0]])
             else:
-                guess = np.array([1.0, 0.0, 0.0]) + 10*np.random.random(3)
+                guess = np.array([1.0, 0.0, 0.0]) + 10*np.random.random(3) - 10*np.random.random(3)
             res =\
                 optimize.minimize(what_angles, guess,
-                                  args=(jones_avg_alice_static, [hwp_ang, 0],
-                                        pc_rot_alice, off_state_only))
+                                  args=(jones_avg_static, [hwp_ang, 0],
+                                        pc_rot, off_state_only))
             #print(res.fun)
             if res.fun < opt_tol_a * 1e-1:
                 optimized = True
+        return res
+
+    if alice:
+        res = optimize_bridge(jones_avg_alice_static, pc_rot_alice)
+        # while not optimized:
+        #     if off_state_only is False:
+        #         guess = np.array([1.0, 0.0, 0.0, 0.1]) +\
+        #             np.hstack([10*np.random.random(3), [0]])
+        #     else:
+        #         guess = np.array([1.0, 0.0, 0.0]) #+ 10*np.random.random(3) - 10*np.random.random(3)
+        #     res =\
+        #         optimize.minimize(what_angles, guess,
+        #                           args=(jones_avg_alice_static, [hwp_ang, 0],
+        #                                 pc_rot_alice, off_state_only))
+        #     #print(res.fun)
+        #     if res.fun < opt_tol_a * 1e-1:
+        #         optimized = True
     else:
-        while not optimized:
-            if off_state_only is False:
-                guess = np.array([1.0, 0.0, 0.0, 0.1]) +\
-                    np.hstack([10*np.random.random(3), [0]])
-            else:
-                guess = np.array([1.0, 0.0, 0.0]) + 10*np.random.random(3)
-            res =\
-                optimize.minimize(what_angles, guess,
-                                  args=(jones_avg_bob_static, [hwp_ang, 0],
-                                        pc_rot_bob, off_state_only))
-            if res.fun < opt_tol_b * 1e-1:
-                optimized = True
+        res = optimize_bridge(jones_avg_bob_static, pc_rot_bob)
+        # while not optimized:
+        #     if off_state_only is False:
+        #         guess = np.array([1.0, 0.0, 0.0, 0.1]) +\
+        #             np.hstack([10*np.random.random(3), [0]])
+        #     else:
+        #         guess = np.array([1.0, 0.0, 0.0]) + 10*np.random.random(3)
+        #     res =\
+        #         optimize.minimize(what_angles, guess,
+        #                           args=(jones_avg_bob_static, [hwp_ang, 0],
+        #                                 pc_rot_bob, off_state_only))
+        #     if res.fun < opt_tol_b * 1e-1:
+        #         optimized = True
 
     return res.x[:3]
 
