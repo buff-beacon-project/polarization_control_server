@@ -31,8 +31,8 @@ while true; do
       echo "$(date) — $name heartbeat failed (${FAILS[i]}/${RETRIES})"
       if (( FAILS[i] >= RETRIES )); then
         echo "$(date) — restarting $name"
-        # docker restart "$name"
-        docker-compose restart "$name"
+        docker restart "$name"
+        #docker-compose restart "$name"
         FAILS[i]=0
       fi
     fi
