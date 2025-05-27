@@ -9,6 +9,7 @@ from zmqhelper import ZMQServiceBase
 import json
 from datetime import datetime, date
 import redis_read as r_read
+import concurrent.futures
 
 class PolarizationServer(ZMQServiceBase):
     '''
@@ -189,7 +190,7 @@ class PolarizationServer(ZMQServiceBase):
         try:
             self.logger.info(f"Connecting to motor at {ip}:{port}")
             # Attempt to connect to the motor with a timeout of 5 seconds
-            import concurrent.futures
+            
 
             def connect():
                 return MotorController(ip, port)
@@ -201,12 +202,12 @@ class PolarizationServer(ZMQServiceBase):
                 except concurrent.futures.TimeoutError:
                     self.logger.error(f"Timeout: Failed to connect to motor at {ip}:{port} within 5 seconds")
                     raise self.MotorConnectionError(f"Timeout: Failed to connect to motor at {ip}:{port} within 5 seconds")
-            angles = mc.getAllPos()
-            self.logger.info(f"Connected to motor at {ip}:{port}, angles: {angles}")
+            # angles = mc.getAllPos()
+            self.logger.info(f"Connected to motor at {ip}:{port}")
         except Exception as e:
             self.logger.error(f"Failed to connect to motor at {ip}:{port}: {e}")
-            raise self.MotorConnectionError(f"Failed to connect to motor at {ip}:{port}: {e}") from e
-            os._exit()  # Exit the program if connection fails
+            # raise self.MotorConnectionError(f"Failed to connect to motor at {ip}:{port}: {e}") from e
+            # os._exit()  # Exit the program if connection fails
             # self._on_critical_error(f"Failed to connect to motor at {ip}:{port}: {e}")
         return mc
 
