@@ -188,6 +188,7 @@ class PolarizationServer(ZMQServiceBase):
 
     def connect_to_motor(self, ip: str, port: int):
         try:
+            print(f"Connecting to motor at {ip}:{port}")
             self.logger.info(f"Connecting to motor at {ip}:{port}")
             # Attempt to connect to the motor with a timeout of 5 seconds
             
@@ -205,6 +206,7 @@ class PolarizationServer(ZMQServiceBase):
             # angles = mc.getAllPos()
             self.logger.info(f"Connected to motor at {ip}:{port}")
         except Exception as e:
+            print(f"Failed to connect to motor at {ip}:{port}: {e}")
             self.logger.error(f"Failed to connect to motor at {ip}:{port}: {e}")
             # raise self.MotorConnectionError(f"Failed to connect to motor at {ip}:{port}: {e}") from e
             # os._exit()  # Exit the program if connection fails
