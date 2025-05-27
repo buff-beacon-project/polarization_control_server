@@ -10,6 +10,7 @@ import json
 from datetime import datetime, date
 import redis_read as r_read
 import concurrent.futures
+import os
 
 class PolarizationServer(ZMQServiceBase):
     '''
@@ -191,7 +192,7 @@ class PolarizationServer(ZMQServiceBase):
     def connect_to_motor(self, ip: str, port: int):
         # try:
         print(f"Starting connection to motor at {ip}:{port}")
-        self.logger.info(f"Connecting to motor at {ip}:{port}")
+        self.logger.info(f"Starting connection to motor at {ip}:{port}")
         # Attempt to connect to the motor with a timeout of 5 seconds
         
 
@@ -206,6 +207,7 @@ class PolarizationServer(ZMQServiceBase):
                 mc = future.result(timeout=5)
             except concurrent.futures.TimeoutError:
                 self.logger.error(f"Timeout: Failed to connect to motor at {ip}:{port} within 5 seconds")
+                os._exit(2)  # Exit the program if connection fails
                 # raise self.MotorConnectionError(f"Timeout: Failed to connect to motor at {ip}:{port} within 5 seconds")
         self.logger.info(f"Successfully connected to motor at {ip}:{port}")
         
