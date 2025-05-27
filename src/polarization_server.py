@@ -50,12 +50,14 @@ class PolarizationServer(ZMQServiceBase):
         self.logger.info(f'Polarization server Started at {self.time_start}')
         self.logger.info(f"Config: {config}")
         
+        self.get_positions()
+        
     def get_positions(self):
         motorInfo = self.motorInfo
         for party in motorInfo:
             ip = motorInfo[party]['ip']
             port = motorInfo[party]['port']
-            mc = MotorController(ip, port)
+            mc = self.connect_to_motor(ip, port)
             angles = mc.getAllPos()
             self.logger.info(f"Motor positions for {party}: {angles}")
         return angles
