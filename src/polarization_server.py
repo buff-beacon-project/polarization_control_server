@@ -53,6 +53,7 @@ class PolarizationServer(ZMQServiceBase):
         self.get_positions()
         
     def get_positions(self):
+        self.logger.info(f"Getting motor positions: {self.motorInfo}")
         motorInfo = self.motorInfo
         for party in motorInfo:
             ip = motorInfo[party]['ip']
