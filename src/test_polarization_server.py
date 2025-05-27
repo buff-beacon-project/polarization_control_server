@@ -1,7 +1,7 @@
 from zmqhelper import Client
 import json
 
-con = Client(ip='localhost', port=5100)
+con = Client(ip='bellamd1.campus.nist.gov', port=5100)
 
 def send_message(con, cmd, params=None):
     if params is None:

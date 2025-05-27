@@ -77,82 +77,82 @@ class PolarizationServer(ZMQServiceBase):
         print(f"Command received: {cmd}, {params}")
         self.logger.info(f"Command received: {cmd} with params: {params}")
         
-        try:
-            if cmd == 'set_polarization':
-                setting = str(params['setting']).lower()
-                resp = self.set_polarization(self.config, **params)
-                
-            elif cmd == 'calibrate':
-                party = params['party'].lower()
-                resp = self.optimize_wvplts(party, self.config)
-                if party == 'source':
-                    print(f"Finished source calibration with positions: {resp}")
-                    new_source_HWP_zero = float(resp['source_Power_1']-360.)
-                    self.config['source']['source_power_angle'] = new_source_HWP_zero
-                    self.logger.info(f"Setting new source power angle: {new_source_HWP_zero}")
-                    write_config_to_file(self.config, self.configFName)
-                    
-            elif cmd == 'set_pc_to_bell_angles':
-                if 'angles' not in params:
-                    angles = self.config['bell_angles']
-                    params['angles'] = angles
-                self.logger.info(f"Setting PC angles to: {params['angles']}")
-                resp = self.set_ch_waveplates(self.config, **params)
-                
-            elif cmd == 'set_power':
-                power = float(params['power'])
-                if power < 0. or power > 1.:
-                    res['error'] = "Power must be between 0 and 1"
-                    self.logger.error("Power must be between 0 and 1")
-                else:
-                    source_pow = float(self.config['source']['source_power_angle'])
-                    resp = self.set_power(power, source_pow)
-                    self.logger.info(f"Setting power to: {power}")
-                
-            elif cmd == 'home':
-                party = params['party'].lower()
-                if party == 'alice':
-                    self.home(ip=motorInfo['alice']['ip'], port=motorInfo['alice']['port'])
-                    self.logger.info("Homing Alice motor")
-                elif party == 'bob':
-                    self.home(ip=motorInfo['bob']['ip'], port=motorInfo['bob']['port'])
-                    self.logger.info("Homing Bob motor")
-                elif party == 'source':
-                    self.home(ip=motorInfo['source']['ip'], port=motorInfo['source']['port'])
-                    self.logger.info("Homing Source motor")
-                elif party == 'all':
-                    self.homeAll()
-                    self.logger.info("Homing all motors")
-                else:
-                    res['error'] = "Invalid Party"
+        # try:
+        if cmd == 'set_polarization':
+            setting = str(params['setting']).lower()
+            resp = self.set_polarization(self.config, **params)
             
-            elif cmd == 'get_positions':
-                resp = self.get_positions()
+        elif cmd == 'calibrate':
+            party = params['party'].lower()
+            resp = self.optimize_wvplts(party, self.config)
+            if party == 'source':
+                print(f"Finished source calibration with positions: {resp}")
+                new_source_HWP_zero = float(resp['source_Power_1']-360.)
+                self.config['source']['source_power_angle'] = new_source_HWP_zero
+                self.logger.info(f"Setting new source power angle: {new_source_HWP_zero}")
+                write_config_to_file(self.config, self.configFName)
                 
-            elif cmd == 'test':
-                resp = "Test successful"
-                self.logger.info("Test successful") 
-                
-            elif cmd == 'commands':
-                resp = self.config['commands']
-
-            elif cmd == 'info':
-                resp = {}
-                resp['status'] = "Running"
-                resp['name'] = self.config['config_setup']['name']
-                resp['description'] = self.config['config_setup']['description']
-                resp['settings'] = self.config['settings']
-                resp['uptime'] = str(datetime.now() - self.time_start)
-                
+        elif cmd == 'set_pc_to_bell_angles':
+            if 'angles' not in params:
+                angles = self.config['bell_angles']
+                params['angles'] = angles
+            self.logger.info(f"Setting PC angles to: {params['angles']}")
+            resp = self.set_ch_waveplates(self.config, **params)
+            
+        elif cmd == 'set_power':
+            power = float(params['power'])
+            if power < 0. or power > 1.:
+                res['error'] = "Power must be between 0 and 1"
+                self.logger.error("Power must be between 0 and 1")
             else:
-                res['error'] = "Invalid Command"
+                source_pow = float(self.config['source']['source_power_angle'])
+                resp = self.set_power(power, source_pow)
+                self.logger.info(f"Setting power to: {power}")
+            
+        elif cmd == 'home':
+            party = params['party'].lower()
+            if party == 'alice':
+                self.home(ip=motorInfo['alice']['ip'], port=motorInfo['alice']['port'])
+                self.logger.info("Homing Alice motor")
+            elif party == 'bob':
+                self.home(ip=motorInfo['bob']['ip'], port=motorInfo['bob']['port'])
+                self.logger.info("Homing Bob motor")
+            elif party == 'source':
+                self.home(ip=motorInfo['source']['ip'], port=motorInfo['source']['port'])
+                self.logger.info("Homing Source motor")
+            elif party == 'all':
+                self.homeAll()
+                self.logger.info("Homing all motors")
+            else:
+                res['error'] = "Invalid Party"
+        
+        elif cmd == 'get_positions':
+            resp = self.get_positions()
+            
+        elif cmd == 'test':
+            resp = "Test successful"
+            self.logger.info("Test successful") 
+            
+        elif cmd == 'commands':
+            resp = self.config['commands']
 
-        except Exception as e:
-            self.logger.error(f"Error: {e}")
-            res ={}
-            res['error'] = "Error: "+str(e)
-        res['message'] = resp
-        res = self.encode_message(res)
+        elif cmd == 'info':
+            resp = {}
+            resp['status'] = "Running"
+            resp['name'] = self.config['config_setup']['name']
+            resp['description'] = self.config['config_setup']['description']
+            resp['settings'] = self.config['settings']
+            resp['uptime'] = str(datetime.now() - self.time_start)
+            
+        else:
+            res['error'] = "Invalid Command"
+
+        # except Exception as e:
+        #     self.logger.error(f"Error: {e}")
+        #     res ={}
+        #     res['error'] = "Error: "+str(e)
+        # res['message'] = resp
+        # res = self.encode_message(res)
         print("\n Sending message", res)
         self.logger.info(f"Sending message: {res}")
         return res
