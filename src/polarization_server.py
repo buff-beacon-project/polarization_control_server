@@ -305,12 +305,12 @@ class PolarizationServer(ZMQServiceBase):
         for party in params.keys():
             ip = motorInfo[party]['ip']
             port = motorInfo[party]['port']
-            mc.append(MotorController(ip, port))
+            mc.append(self.connect_to_motor(ip, port))
             try:
                 angles = params[party]
                 for wp in angles:
                     ang = angles[wp]
-                    mc.append(MotorController(ip, port=port))
+                    mc.append(self.connect_to_motor(ip, port=port))
                     t.append(threading.Thread(target=mc[-1].goto, args=(wp, ang,)))
                     t[-1].start()
             except Exception as e:
