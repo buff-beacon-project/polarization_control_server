@@ -32,7 +32,7 @@ while true; do
       if (( FAILS[i] >= RETRIES )); then
         echo "$(date) — restarting $name"
         # docker restart "$name"
-        docker-compose up "$name"
+        docker-compose restart "$name"
         FAILS[i]=0
       fi
     fi

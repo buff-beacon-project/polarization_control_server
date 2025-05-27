@@ -32,7 +32,7 @@ services:
       # Match names with URLs by index
       SERVICE_NAMES: polarization_server #, service_b,service_c,service_d
       HEALTH_URLS:   http://127.0.0.1:5101/healthz #,http://service_b:8081/healthz,http://service_c:8082/healthz,http://service_d:8083/healthz
-      INTERVAL: 10    # seconds between checks
+      INTERVAL: 3    # seconds between checks
       RETRIES: 3      # consecutive failures before restart
     entrypoint: ["bash", "/monitor.sh"]
     restart: always
