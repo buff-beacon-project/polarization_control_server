@@ -188,8 +188,8 @@ class PolarizationServer(ZMQServiceBase):
     def connect_to_motor(self, ip: str, port: int):
         mc = MotorController(ip, port)
         try:
-            mc.send_message('Test', timeout=10)
-            self.logger.info(f"Connected to motor at {ip}:{port}")
+            angles = mc.getAllPos()
+            self.logger.info(f"Connected to motor at {ip}:{port}, angles: {angles}")
         except Exception as e:
             self.logger.error(f"Failed to connect to motor at {ip}:{port}: {e}")
             raise self.MotorConnectionError(f"Failed to connect to motor at {ip}:{port}: {e}") from e
