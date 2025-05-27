@@ -1,7 +1,8 @@
 version: "3.3"
 services:
   polarization_server:
-    image: "polarization_server"
+    image: polarization_server
+    container_name: polarization_server
     ports:
       - "5100:5100"
       - "5101:5101"
