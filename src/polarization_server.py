@@ -190,28 +190,30 @@ class PolarizationServer(ZMQServiceBase):
         pass
 
     def connect_to_motor(self, ip: str, port: int):
+        return MotorController(ip, port)
         # try:
-        print(f"Starting connection to motor at {ip}:{port}")
-        self.logger.info(f"Starting connection to motor at {ip}:{port}")
-        # Attempt to connect to the motor with a timeout of 5 seconds
+        # print(f"Starting connection to motor at {ip}:{port}")
+        # self.logger.info(f"Starting connection to motor at {ip}:{port}")
+        
+        # # Attempt to connect to the motor with a timeout of 5 seconds
         
 
-        def connect():
-            mc = MotorController(ip, port)
-            mc.getAllPos()
-            return mc
+        # def connect():
+        #     mc = MotorController(ip, port)
+        #     mc.getAllPos()
+        #     return mc
 
-        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
-            future = executor.submit(connect)
-            try:
-                mc = future.result(timeout=5)
-            except concurrent.futures.TimeoutError:
-                self.logger.error(f"Timeout: Failed to connect to motor at {ip}:{port} within 5 seconds")
-                return None
-                # raise self.MotorConnectionError(f"Timeout: Failed to connect to motor at {ip}:{port} within 5 seconds")
-        self.logger.info(f"Successfully connected to motor at {ip}:{port}")
+        # with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+        #     future = executor.submit(connect)
+        #     try:
+        #         mc = future.result(timeout=5)
+        #     except concurrent.futures.TimeoutError:
+        #         self.logger.error(f"Timeout: Failed to connect to motor at {ip}:{port} within 5 seconds")
+        #         return None
+        #         # raise self.MotorConnectionError(f"Timeout: Failed to connect to motor at {ip}:{port} within 5 seconds")
+        # self.logger.info(f"Successfully connected to motor at {ip}:{port}")
         
-        return mc
+        # return mc
 
     def home(self, ip: str, port: int):
         mc = self.connect_to_motor(ip, port)
