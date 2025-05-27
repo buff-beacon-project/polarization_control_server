@@ -151,8 +151,8 @@ class PolarizationServer(ZMQServiceBase):
         #     self.logger.error(f"Error: {e}")
         #     res ={}
         #     res['error'] = "Error: "+str(e)
-        # res['message'] = resp
-        # res = self.encode_message(res)
+        res['message'] = resp
+        res = self.encode_message(res)
         print("\n Sending message", res)
         self.logger.info(f"Sending message: {res}")
         return res
