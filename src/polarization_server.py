@@ -187,8 +187,20 @@ class PolarizationServer(ZMQServiceBase):
 
     def connect_to_motor(self, ip: str, port: int):
         try:
-            mc = MotorController(ip, port)
             self.logger.info(f"Connecting to motor at {ip}:{port}")
+            # Attempt to connect to the motor with a timeout of 5 seconds
+            import concurrent.futures
+
+            def connect():
+                return MotorController(ip, port)
+
+            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+                future = executor.submit(connect)
+                try:
+                    mc = future.result(timeout=5)
+                except concurrent.futures.TimeoutError:
+                    self.logger.error(f"Timeout: Failed to connect to motor at {ip}:{port} within 5 seconds")
+                    raise self.MotorConnectionError(f"Timeout: Failed to connect to motor at {ip}:{port} within 5 seconds")
             angles = mc.getAllPos()
             self.logger.info(f"Connected to motor at {ip}:{port}, angles: {angles}")
         except Exception as e:
@@ -474,7 +486,7 @@ def save_config_to_file(config, fname='client.yaml'):
     config_fp.close()
 
 def main():
-    configFName = 'config/polarization.yaml'
+    configFName = '../config/polarization.yaml'
     config = load_config_from_file(configFName)
 
     polarization_server = PolarizationServer(config, configFName)
