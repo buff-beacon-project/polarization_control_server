@@ -81,80 +81,82 @@ class PolarizationServer(ZMQServiceBase):
         print(f"Command received: {cmd}, {params}")
         self.logger.info(f"Command received: {cmd} with params: {params}")
         
-        # try:
-        if cmd == 'set_polarization':
-            setting = str(params['setting']).lower()
-            resp = self.set_polarization(self.config, **params)
-            
-        elif cmd == 'calibrate':
-            party = params['party'].lower()
-            resp = self.optimize_wvplts(party, self.config)
-            if party == 'source':
-                print(f"Finished source calibration with positions: {resp}")
-                new_source_HWP_zero = float(resp['source_Power_1']-360.)
-                self.config['source']['source_power_angle'] = new_source_HWP_zero
-                self.logger.info(f"Setting new source power angle: {new_source_HWP_zero}")
-                write_config_to_file(self.config, self.configFName)
+        try:
+            if cmd == 'set_polarization':
+                setting = str(params['setting']).lower()
+                resp = self.set_polarization(self.config, **params)
                 
-        elif cmd == 'set_pc_to_bell_angles':
-            if 'angles' not in params:
-                angles = self.config['bell_angles']
-                params['angles'] = angles
-            self.logger.info(f"Setting PC angles to: {params['angles']}")
-            resp = self.set_ch_waveplates(self.config, **params)
+            elif cmd == 'calibrate':
+                party = params['party'].lower()
+                resp = self.optimize_wvplts(party, self.config)
+                if party == 'source':
+                    print(f"Finished source calibration with positions: {resp}")
+                    new_source_HWP_zero = float(resp['source_Power_1']-360.)
+                    self.config['source']['source_power_angle'] = new_source_HWP_zero
+                    self.logger.info(f"Setting new source power angle: {new_source_HWP_zero}")
+                    write_config_to_file(self.config, self.configFName)
+                    
+            elif cmd == 'set_pc_to_bell_angles':
+                if 'angles' not in params:
+                    angles = self.config['bell_angles']
+                    params['angles'] = angles
+                self.logger.info(f"Setting PC angles to: {params['angles']}")
+                resp = self.set_ch_waveplates(self.config, **params)
+                
+            elif cmd == 'set_power':
+                power = float(params['power'])
+                if power < 0. or power > 1.:
+                    res['error'] = "Power must be between 0 and 1"
+                    self.logger.error("Power must be between 0 and 1")
+                else:
+                    source_pow = float(self.config['source']['source_power_angle'])
+                    resp = self.set_power(power, source_pow)
+                    self.logger.info(f"Setting power to: {power}")
+                
+            elif cmd == 'home':
+                party = params['party'].lower()
+                if party == 'alice':
+                    self.home(ip=motorInfo['alice']['ip'], port=motorInfo['alice']['port'])
+                    self.logger.info("Homing Alice motor")
+                elif party == 'bob':
+                    self.home(ip=motorInfo['bob']['ip'], port=motorInfo['bob']['port'])
+                    self.logger.info("Homing Bob motor")
+                elif party == 'source':
+                    self.home(ip=motorInfo['source']['ip'], port=motorInfo['source']['port'])
+                    self.logger.info("Homing Source motor")
+                elif party == 'all':
+                    self.homeAll()
+                    self.logger.info("Homing all motors")
+                else:
+                    res['error'] = "Invalid Party"
             
-        elif cmd == 'set_power':
-            power = float(params['power'])
-            if power < 0. or power > 1.:
-                res['error'] = "Power must be between 0 and 1"
-                self.logger.error("Power must be between 0 and 1")
-            else:
-                source_pow = float(self.config['source']['source_power_angle'])
-                resp = self.set_power(power, source_pow)
-                self.logger.info(f"Setting power to: {power}")
-            
-        elif cmd == 'home':
-            party = params['party'].lower()
-            if party == 'alice':
-                self.home(ip=motorInfo['alice']['ip'], port=motorInfo['alice']['port'])
-                self.logger.info("Homing Alice motor")
-            elif party == 'bob':
-                self.home(ip=motorInfo['bob']['ip'], port=motorInfo['bob']['port'])
-                self.logger.info("Homing Bob motor")
-            elif party == 'source':
-                self.home(ip=motorInfo['source']['ip'], port=motorInfo['source']['port'])
-                self.logger.info("Homing Source motor")
-            elif party == 'all':
-                self.homeAll()
-                self.logger.info("Homing all motors")
-            else:
-                res['error'] = "Invalid Party"
-        
-        elif cmd == 'get_positions':
-            resp = self.get_positions()
-            
-        elif cmd == 'test':
-            resp = "Test successful"
-            self.logger.info("Test successful") 
-            
-        elif cmd == 'commands':
-            resp = self.config['commands']
+            elif cmd == 'get_positions':
+                resp = self.get_positions()
+                
+            elif cmd == 'test':
+                resp = "Test successful"
+                self.logger.info("Test successful") 
+                
+            elif cmd == 'commands':
+                resp = self.config['commands']
 
-        elif cmd == 'info':
-            resp = {}
-            resp['status'] = "Running"
-            resp['name'] = self.config['config_setup']['name']
-            resp['description'] = self.config['config_setup']['description']
-            resp['settings'] = self.config['settings']
-            resp['uptime'] = str(datetime.now() - self.time_start)
-            
-        else:
-            res['error'] = "Invalid Command"
+            elif cmd == 'info':
+                resp = {}
+                resp['status'] = "Running"
+                resp['name'] = self.config['config_setup']['name']
+                resp['description'] = self.config['config_setup']['description']
+                resp['settings'] = self.config['settings']
+                resp['uptime'] = str(datetime.now() - self.time_start)
+                
+            else:
+                res['error'] = "Invalid Command"
 
-        # except Exception as e:
-        #     self.logger.error(f"Error: {e}")
-        #     res ={}
-        #     res['error'] = "Error: "+str(e)
+        except Exception as e:
+            self.logger.error(f"Error: {e}")
+            res ={}
+            res['error'] = "Error: "+str(e)
+            resp = f"An error occurred while processing the command: {inputs}"
+            
         res['message'] = resp
         res = self.encode_message(res)
         print("\n Sending message", res)
@@ -187,30 +189,32 @@ class PolarizationServer(ZMQServiceBase):
         pass
 
     def connect_to_motor(self, ip: str, port: int):
-        try:
-            print(f"Connecting to motor at {ip}:{port}")
-            self.logger.info(f"Connecting to motor at {ip}:{port}")
-            # Attempt to connect to the motor with a timeout of 5 seconds
-            
+        # try:
+        print(f"Starting connection to motor at {ip}:{port}")
+        self.logger.info(f"Connecting to motor at {ip}:{port}")
+        # Attempt to connect to the motor with a timeout of 5 seconds
+        
 
-            def connect():
-                return MotorController(ip, port)
+        def connect():
+            mc = MotorController(ip, port)
+            mc.getAllPos()
+            return mc
 
-            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
-                future = executor.submit(connect)
-                try:
-                    mc = future.result(timeout=5)
-                except concurrent.futures.TimeoutError:
-                    self.logger.error(f"Timeout: Failed to connect to motor at {ip}:{port} within 5 seconds")
-                    raise self.MotorConnectionError(f"Timeout: Failed to connect to motor at {ip}:{port} within 5 seconds")
-            # angles = mc.getAllPos()
-            self.logger.info(f"Connected to motor at {ip}:{port}")
-        except Exception as e:
-            print(f"Failed to connect to motor at {ip}:{port}: {e}")
-            self.logger.error(f"Failed to connect to motor at {ip}:{port}: {e}")
-            # raise self.MotorConnectionError(f"Failed to connect to motor at {ip}:{port}: {e}") from e
-            # os._exit()  # Exit the program if connection fails
-            # self._on_critical_error(f"Failed to connect to motor at {ip}:{port}: {e}")
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+            future = executor.submit(connect)
+            try:
+                mc = future.result(timeout=5)
+            except concurrent.futures.TimeoutError:
+                self.logger.error(f"Timeout: Failed to connect to motor at {ip}:{port} within 5 seconds")
+                raise self.MotorConnectionError(f"Timeout: Failed to connect to motor at {ip}:{port} within 5 seconds")
+        self.logger.info(f"Successfully connected to motor at {ip}:{port}")
+        
+        # except Exception as e:
+        #     print(f"Failed to connect to motor at {ip}:{port}: {e}")
+        #     self.logger.error(f"Failed to connect to motor at {ip}:{port}: {e}")
+        #     # raise self.MotorConnectionError(f"Failed to connect to motor at {ip}:{port}: {e}") from e
+        #     # os._exit()  # Exit the program if connection fails
+        #     self._on_critical_error(f"Failed to connect to motor at {ip}:{port}: {e}")
         return mc
 
     def home(self, ip: str, port: int):
