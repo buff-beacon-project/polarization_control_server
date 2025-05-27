@@ -22,7 +22,7 @@ services:
     depends_on:
       - polarization_server
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/run/docker.sock:/var/run/docker.sock:rw
       - ./docker-compose.yml:/tmp/docker-compose.yml:ro
       - ./monitor.sh:/monitor.sh:ro
     working_dir: /tmp
