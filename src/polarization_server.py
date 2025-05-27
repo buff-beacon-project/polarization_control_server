@@ -486,7 +486,7 @@ def save_config_to_file(config, fname='client.yaml'):
     config_fp.close()
 
 def main():
-    configFName = '../config/polarization.yaml'
+    configFName = 'config/polarization.yaml'
     config = load_config_from_file(configFName)
 
     polarization_server = PolarizationServer(config, configFName)
