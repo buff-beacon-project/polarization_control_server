@@ -7,9 +7,9 @@ services:
       - "5101:5101"
     volumes:
       - ./src:/app
-      - ./config:/config
-      - ./logs:/logs
-      - ./cache:/cache
+      - ./config:/app/config
+      - ./logs:/app/logs
+      - ./cache:/app/cache
     stdin_open: true
     tty: true
     restart: always
