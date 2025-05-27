@@ -207,16 +207,10 @@ class PolarizationServer(ZMQServiceBase):
                 mc = future.result(timeout=5)
             except concurrent.futures.TimeoutError:
                 self.logger.error(f"Timeout: Failed to connect to motor at {ip}:{port} within 5 seconds")
-                os._exit(2)  # Exit the program if connection fails
+                return None
                 # raise self.MotorConnectionError(f"Timeout: Failed to connect to motor at {ip}:{port} within 5 seconds")
         self.logger.info(f"Successfully connected to motor at {ip}:{port}")
         
-        # except Exception as e:
-        #     print(f"Failed to connect to motor at {ip}:{port}: {e}")
-        #     self.logger.error(f"Failed to connect to motor at {ip}:{port}: {e}")
-        #     # raise self.MotorConnectionError(f"Failed to connect to motor at {ip}:{port}: {e}") from e
-        #     # os._exit()  # Exit the program if connection fails
-        #     self._on_critical_error(f"Failed to connect to motor at {ip}:{port}: {e}")
         return mc
 
     def home(self, ip: str, port: int):
