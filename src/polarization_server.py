@@ -1,7 +1,8 @@
 import beacon_bridge_optimizations as bc_opt
 from scipy.optimize import minimize
 import time
-from bellMotors import MotorController
+# from bellMotors import MotorController
+from thorlabs_apt_motor_controller import MotorController
 import numpy as np
 import threading
 import yaml as yaml
@@ -9,7 +10,6 @@ from zmqhelper import ZMQServiceBase
 import json
 from datetime import datetime, date
 import redis_read as r_read
-import concurrent.futures
 import os
 
 class PolarizationServer(ZMQServiceBase):
