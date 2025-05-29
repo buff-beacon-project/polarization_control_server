@@ -15,24 +15,24 @@ services:
     tty: true
     restart: always
     command: ["python3", "polarization_server.py"]
-  monitor:
-    build:
-      context: .
-      dockerfile: Dockerfile.monitor
-    container_name: heartbeat_monitor
-    depends_on:
-      - polarization_server
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:rw
-      - ./docker-compose.yml:/tmp/docker-compose.yml:ro
-      - ./monitor.sh:/monitor.sh:ro
-    working_dir: /tmp
-    network_mode: "host"
-    environment:
-      # Match names with URLs by index
-      SERVICE_NAMES: polarization_server #, service_b,service_c,service_d
-      HEALTH_URLS:   http://127.0.0.1:5101/healthz #,http://service_b:8081/healthz,http://service_c:8082/healthz,http://service_d:8083/healthz
-      INTERVAL: 3    # seconds between checks
-      RETRIES: 3      # consecutive failures before restart
-    entrypoint: ["bash", "/monitor.sh"]
-    restart: always
+  # monitor:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.monitor
+  #   container_name: heartbeat_monitor
+  #   depends_on:
+  #     - polarization_server
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock:rw
+  #     - ./docker-compose.yml:/tmp/docker-compose.yml:ro
+  #     - ./monitor.sh:/monitor.sh:ro
+  #   working_dir: /tmp
+  #   network_mode: "host"
+  #   environment:
+  #     # Match names with URLs by index
+  #     SERVICE_NAMES: polarization_server #, service_b,service_c,service_d
+  #     HEALTH_URLS:   http://127.0.0.1:5101/healthz #,http://service_b:8081/healthz,http://service_c:8082/healthz,http://service_d:8083/healthz
+  #     INTERVAL: 3    # seconds between checks
+  #     RETRIES: 3      # consecutive failures before restart
+  #   entrypoint: ["bash", "/monitor.sh"]
+  #   restart: always
