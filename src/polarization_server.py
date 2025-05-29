@@ -74,21 +74,20 @@ class PolarizationServer(ZMQServiceBase):
         self.config = load_config_from_file(self.configFName)
         # print("Received message: ", str(message))
 
-        if message.lower() == 'test':
-            resp = "Test successful"
-            self.logger.info("Test successful")
-            res['message'] = resp
-            res = self.encode_message(res)
-            return res
-        
-        inputs = json.loads(message)
-        cmd = inputs['cmd']
-        params = inputs['params']
-        cmd = cmd.lower()
-        print(f"Command received: {cmd}, {params}")
-        self.logger.info(f"Command received: {cmd} with params: {params}")
+        # if message.lower() == 'test':
+        #     resp = "Test successful"
+        #     self.logger.info("Test successful")
+        #     res['message'] = resp
+        #     res = self.encode_message(res)
+        #     return res
         
         try:
+            inputs = json.loads(message)
+            cmd = inputs['cmd']
+            params = inputs['params']
+            cmd = cmd.lower()
+            print(f"Command received: {cmd}, {params}")
+            self.logger.info(f"Command received: {cmd} with params: {params}")
             if cmd == 'set_polarization':
                 setting = str(params['setting']).lower()
                 resp = self.set_polarization(self.config, **params)
