@@ -1,7 +1,6 @@
 import beacon_bridge_optimizations as bc_opt
 from scipy.optimize import minimize
 import time
-# from bellMotors import MotorController
 from thorlabs_apt_motor_controller import MotorController
 import numpy as np
 import threading
@@ -74,7 +73,14 @@ class PolarizationServer(ZMQServiceBase):
         resp = {}
         self.config = load_config_from_file(self.configFName)
         # print("Received message: ", str(message))
-        # try:
+
+        if message.lower() == 'test':
+            resp = "Test successful"
+            self.logger.info("Test successful")
+            res['message'] = resp
+            res = self.encode_message(res)
+            return res
+        
         inputs = json.loads(message)
         cmd = inputs['cmd']
         params = inputs['params']
