@@ -54,7 +54,7 @@ class PolarizationServer(ZMQServiceBase):
         self.logger.info(f'Polarization server Started at {self.time_start}')
         self.logger.info(f"Config: {config}")
         
-        self.get_positions()
+        # self.get_positions()
         
     def get_positions(self):
         self.logger.info(f"Getting motor positions: {self.motorInfo}")
