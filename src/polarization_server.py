@@ -454,7 +454,11 @@ class PolarizationServer(ZMQServiceBase):
             self.set_power(0., source_pow)
             time.sleep(twait)
             pos, counts = self.optimize_wvplt_scipy('Source', 'Coinc', 'sp', 2.)
-
+        else:
+            self.logger.warning(f"Invalid party: {party}. Must be one of: 'alice', 'bob', 'source'.")
+            raise ValueError(f"Invalid party: {party}. Must be one of: 'alice', 'bob', 'source'.")
+        
+        
         return pos
 
 def load_config_from_file(fname):
