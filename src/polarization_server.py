@@ -127,8 +127,8 @@ class PolarizationServer(ZMQServiceBase):
                 elif party == 'bob':
                     self.home(ip=self.motorInfo['bob']['ip'], port=self.motorInfo['bob']['port'])
                     self.logger.info("Homing Bob motor")
-                elif party == 'source':
-                    self.home(ip=self.motorInfo['source']['ip'], port=self.self.motorInfo['source']['port'])
+                if party == 'source':
+                    self.home(ip=self.motorInfo['source']['ip'], port=self.motorInfo['source']['port'])
                     self.logger.info("Homing Source motor")
                 elif party == 'all':
                     self.homeAll()
@@ -222,9 +222,11 @@ class PolarizationServer(ZMQServiceBase):
 
     def home(self, ip: str, port: int):
         mc = self.connect_to_motor(ip, port)
+        self.logger.debug("Homing motor at {ip}:{port}")
         for motor in mc.id_dict:
+            self.loggger.debug(f"Homing motor {motor} at {ip}:{port}")
             mc.home(motor)
-            self.logger.info(f"Homing {motor} at {ip}:{port}")
+            self.logger.debug(f"Finished homing {motor} at {ip}:{port}")
             print(f"Homing {motor}")
         return
 
