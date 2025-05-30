@@ -440,7 +440,7 @@ class PolarizationServer(ZMQServiceBase):
 
     def optimize_wvplts(self, party, config):
         old_health_fail_threshold = self.health_fail_threshold
-        self.health_fail_threshold = 20  # Increase threshold to allow for motor 
+        self.health_fail_threshold = 60  # Increase threshold to allow for motor 
         party = party.lower()
         twait = 3.
         if party == 'alice':
