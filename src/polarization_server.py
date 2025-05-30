@@ -443,17 +443,18 @@ class PolarizationServer(ZMQServiceBase):
         self.health_fail_threshold = 60  # Increase threshold to allow for motor 
         party = party.lower()
         twait = 3.
+        
         if party == 'alice':
             self.set_polarization(config, 'a_calib')
             self.logger.debug(f"Setting polarization for Alice with config: {config['settings']['a_calib']}")
             time.sleep(twait)
             pos, counts = self.optimize_wvplt_scipy('Source', 'Coinc', 'a', 2.)
-        if party == 'bob':
+        elif party == 'bob':
             self.set_polarization(config, 'b_calib')
             self.logger.debug(f"Setting polarization for Bob with config: {config['settings']['b_calib']}")
             time.sleep(twait)
             pos, counts = self.optimize_wvplt_scipy('Source', 'Coinc', 'b', 2.)
-        if party == 'source':
+        elif party == 'source':
             self.set_polarization(config, '2')
             self.logger.debug(f"Setting polarization for Source with config: {config['settings']['2']}")
             time.sleep(twait)
@@ -464,8 +465,12 @@ class PolarizationServer(ZMQServiceBase):
             pos, counts = self.optimize_wvplt_scipy('Source', 'Coinc', 'sp', 2.)
         else:
             self.logger.warning(f"Invalid party: {party}. Must be one of: 'alice', 'bob', 'source'.")
+            self.health_fail_threshold = old_health_fail_threshold  # Reset threshold
+            self.logger.debug(f"Setting health fail threshold back to {self.health_fail_threshold}")
             raise ValueError(f"Invalid party: {party}. Must be one of: 'alice', 'bob', 'source'.")
         
+        self.health_fail_threshold = old_health_fail_threshold  # Reset threshold
+        self.logger.debug(f"Setting health fail threshold back to {self.health_fail_threshold}")
         
         return pos
 
