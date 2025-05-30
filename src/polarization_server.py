@@ -360,6 +360,7 @@ class PolarizationServer(ZMQServiceBase):
             params['best_pos'] = np.array(best_pos)
             params['best_counts'] = counts
         print((counts, params['best_counts']))
+        self.logger.debug(f"Waveplate positions: {pos}, Counts: {counts}, Best counts: {params['best_counts']}")
         return counts
 
     def optimize_wvplt_scipy(self, arm='Bob', count_type='Coinc',
@@ -372,6 +373,7 @@ class PolarizationServer(ZMQServiceBase):
         motorInfo = self.motorInfo
         # global logger
         arm = arm.lower()
+        self.logger.debug(f"Starting optimization for {arm} with count type {count_type}, waveplates {wvplt}, integration time {int_time}, and window type {window_type}")
         if arm == 'bob':
             mc_obj = self.connect_to_motor(motorInfo['bob']['ip'], motorInfo['bob']['port'])
         elif arm == 'alice':
@@ -437,21 +439,27 @@ class PolarizationServer(ZMQServiceBase):
         return optimized_positions, params['best_counts']
 
     def optimize_wvplts(self, party, config):
+        old_health_fail_threshold = self.health_fail_threshold
+        self.health_fail_threshold = 20  # Increase threshold to allow for motor 
         party = party.lower()
         twait = 3.
         if party == 'alice':
             self.set_polarization(config, 'a_calib')
+            self.logger.debug(f"Setting polarization for Alice with config: {config['settings']['a_calib']}")
             time.sleep(twait)
             pos, counts = self.optimize_wvplt_scipy('Source', 'Coinc', 'a', 2.)
         if party == 'bob':
             self.set_polarization(config, 'b_calib')
+            self.logger.debug(f"Setting polarization for Bob with config: {config['settings']['b_calib']}")
             time.sleep(twait)
             pos, counts = self.optimize_wvplt_scipy('Source', 'Coinc', 'b', 2.)
         if party == 'source':
             self.set_polarization(config, '2')
+            self.logger.debug(f"Setting polarization for Source with config: {config['settings']['2']}")
             time.sleep(twait)
             source_pow = float(self.config['source']['source_power_angle'])
             self.set_power(0., source_pow)
+            self.logger.debug(f"Setting source power to 0 with angle: {source_pow}")
             time.sleep(twait)
             pos, counts = self.optimize_wvplt_scipy('Source', 'Coinc', 'sp', 2.)
         else:
