@@ -122,13 +122,13 @@ class PolarizationServer(ZMQServiceBase):
             elif cmd == 'home':
                 party = params['party'].lower()
                 if party == 'alice':
-                    self.home(ip=motorInfo['alice']['ip'], port=motorInfo['alice']['port'])
+                    self.home(ip=self.motorInfo['alice']['ip'], port=self.motorInfo['alice']['port'])
                     self.logger.info("Homing Alice motor")
                 elif party == 'bob':
-                    self.home(ip=motorInfo['bob']['ip'], port=motorInfo['bob']['port'])
+                    self.home(ip=self.motorInfo['bob']['ip'], port=self.motorInfo['bob']['port'])
                     self.logger.info("Homing Bob motor")
                 elif party == 'source':
-                    self.home(ip=motorInfo['source']['ip'], port=motorInfo['source']['port'])
+                    self.home(ip=self.motorInfo['source']['ip'], port=self.self.motorInfo['source']['port'])
                     self.logger.info("Homing Source motor")
                 elif party == 'all':
                     self.homeAll()
@@ -229,7 +229,7 @@ class PolarizationServer(ZMQServiceBase):
         return
 
     def homeAll(self):
-        global motorInfo
+        motorInfo = self.motorInfo
         for party in motorInfo:
             self.home(motorInfo[party]['ip'], motorInfo[party]['port'])
 
