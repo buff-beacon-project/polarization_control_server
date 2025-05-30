@@ -192,6 +192,8 @@ class PolarizationServer(ZMQServiceBase):
         return MotorController(ip, port)
 
     def home(self, ip: str, port: int):
+        old_health_fail_threshold = self.health_fail_threshold
+        self.health_fail_threshold = 20  # Increase threshold to allow for motor homing
         mc = self.connect_to_motor(ip, port)
         self.logger.debug("Homing motor at {ip}:{port}")
         for motor in mc.id_dict:
@@ -199,6 +201,7 @@ class PolarizationServer(ZMQServiceBase):
             mc.home(motor)
             self.logger.debug(f"Finished homing {motor} at {ip}:{port}")
             print(f"Homing {motor}")
+        self.health_fail_threshold = old_health_fail_threshold  # Reset threshold
         return
 
     def homeAll(self):
