@@ -11,6 +11,9 @@ from datetime import datetime, date
 import redis_read as r_read
 import os
 
+class MotorConnectionError(Exception):
+        pass
+    
 class PolarizationServer(ZMQServiceBase):
     '''
     Bit authentication server for a verifier. The verifier waits for a start signal from a prover and then executes the authentication protocol using only the local computer time.
@@ -191,34 +194,8 @@ class PolarizationServer(ZMQServiceBase):
         return msgout 
     #############
 
-    class MotorConnectionError(Exception):
-        pass
-
     def connect_to_motor(self, ip: str, port: int):
         return MotorController(ip, port)
-        # try:
-        # print(f"Starting connection to motor at {ip}:{port}")
-        # self.logger.info(f"Starting connection to motor at {ip}:{port}")
-        
-        # # Attempt to connect to the motor with a timeout of 5 seconds
-        
-
-        # def connect():
-        #     mc = MotorController(ip, port)
-        #     mc.getAllPos()
-        #     return mc
-
-        # with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
-        #     future = executor.submit(connect)
-        #     try:
-        #         mc = future.result(timeout=5)
-        #     except concurrent.futures.TimeoutError:
-        #         self.logger.error(f"Timeout: Failed to connect to motor at {ip}:{port} within 5 seconds")
-        #         return None
-        #         # raise self.MotorConnectionError(f"Timeout: Failed to connect to motor at {ip}:{port} within 5 seconds")
-        # self.logger.info(f"Successfully connected to motor at {ip}:{port}")
-        
-        # return mc
 
     def home(self, ip: str, port: int):
         mc = self.connect_to_motor(ip, port)
