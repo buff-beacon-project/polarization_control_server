@@ -19,7 +19,7 @@ class PolarizationServer(ZMQServiceBase):
     Bit authentication server for a verifier. The verifier waits for a start signal from a prover and then executes the authentication protocol using only the local computer time.
     '''
         
-    def __init__(self, config, configFName, n_workers=6):
+    def __init__(self, config, configFName, n_workers=1):
         # global logger
         
         self.config = config
