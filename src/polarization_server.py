@@ -195,7 +195,7 @@ class PolarizationServer(ZMQServiceBase):
         mc = self.connect_to_motor(ip, port)
         self.logger.debug("Homing motor at {ip}:{port}")
         for motor in mc.id_dict:
-            self.loggger.debug(f"Homing motor {motor} at {ip}:{port}")
+            self.logger.debug(f"Homing motor {motor} at {ip}:{port}")
             mc.home(motor)
             self.logger.debug(f"Finished homing {motor} at {ip}:{port}")
             print(f"Homing {motor}")
