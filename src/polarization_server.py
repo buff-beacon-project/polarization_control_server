@@ -348,15 +348,20 @@ class PolarizationServer(ZMQServiceBase):
         window_type = params['window_type']
 
         pos = pos * scale + start_pos
-        
+        self.logger.debug(f"Optimizing waveplate positions: {pos} with scale {scale} and start positions {start_pos}")
         for i, waveplate in enumerate(waveplates):
             mc_obj.goto(waveplate, pos[i])
+        self.logger.debug(f"Moved waveplates to positions: {pos}")
         time.sleep(.5)
         counts = self.get_power(int_time, count_type, window_type)
+        self.logger.debug(f"Counts received: {counts} for positions: {pos}")
         if (counts < best_counts):
             best_pos = []
+            self.logger.debug(f"New best counts found: {counts} at positions: {pos}")
+            params['best_counts'] = counts
             for waveplate in waveplates:
                 best_pos.append(float(mc_obj.getPos(waveplate)))
+            self.logger.debug(f"Best positions updated: {best_pos}")
             params['best_pos'] = np.array(best_pos)
             params['best_counts'] = counts
         print((counts, params['best_counts']))
@@ -424,7 +429,7 @@ class PolarizationServer(ZMQServiceBase):
                 'window_type': window_type}
         options = {'xtol': 0.2, 'maxiter': niter, 'maxfev':niter}
         x0 = np.zeros_like(start_pos)
-
+        self.logger.info(f"Starting optimization with initial positions: {str(start_pos)}")
         res = minimize(self.waveplate_optimization_function, x0, params,
                     method='Powell', options=options)
 
