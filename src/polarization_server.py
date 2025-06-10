@@ -193,7 +193,7 @@ class PolarizationServer(ZMQServiceBase):
 
     def home(self, ip: str, port: int):
         old_health_fail_threshold = self.health_fail_threshold
-        self.health_fail_threshold = 20  # Increase threshold to allow for motor homing
+        self.health_fail_threshold = 60  # Increase threshold to allow for motor homing
         self.logger.debug(f"Setting health fail threshold to {self.health_fail_threshold}")
         mc = self.connect_to_motor(ip, port)
         self.logger.debug("Homing motor at {ip}:{port}")
