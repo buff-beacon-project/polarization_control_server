@@ -167,7 +167,8 @@ class PolarizationServer(ZMQServiceBase):
                 self.logger.info("Test successful")
 
             elif cmd == "commands":
-                resp = self.config["commands"]
+                commands_config = load_commands_from_file("src/commands.yaml")
+                resp = commands_config.get("commands", self.config.get("commands", {}))
 
             elif cmd == "info":
                 resp = {}
@@ -183,10 +184,10 @@ class PolarizationServer(ZMQServiceBase):
                 resp = self.get_motor_info()
                 self.logger.info("Retrieved motor information for all parties")
 
-            elif cmd == "forward" or cmd == "backward":
+            elif cmd == "forward" or cmd == "backward" or cmd == "goto":
                 party = params["party"].lower()
                 waveplate = params["waveplate"]
-                degrees = float(params["degrees"])
+                position = float(params["position"])
                 
                 if party not in self.motorInfo:
                     res["error"] = f"Invalid party: {party}"
@@ -195,19 +196,40 @@ class PolarizationServer(ZMQServiceBase):
                     try:
                         ip = self.motorInfo[party]["ip"]
                         port = self.motorInfo[party]["port"]
-                        print(f"Connecting to motor at {ip}:{port} for {party}")
                         mc = self.connect_to_motor(ip, port) 
-                        print(f"Connected to motor at {ip}:{port} for {party}, {mc.id_dict}")
+                        
+                        # Execute the movement command
                         if cmd == "forward":
-                            print(f"Moving {waveplate} forward by {degrees} degrees on {party}")
-                            resp = mc.forward(waveplate, degrees)
-                            print(f"Finished move, response: {resp}")
+                            move_resp = mc.forward(waveplate, position)
                         elif cmd == "backward":
-                            resp = mc.backward(waveplate, degrees)
+                            move_resp = mc.backward(waveplate, position)
+                        elif cmd == "goto":
+                            move_resp = mc.goto(waveplate, position)
                         else:
-                            resp = f"Invalid command, {cmd}"
-                        # mc.close()
-                        self.logger.info(f"Moved {waveplate} {cmd} by {degrees} degrees on {party}")
+                            move_resp = f"Invalid command, {cmd}"
+                        
+                        # Get current position after movement
+                        current_pos = mc.getPos(waveplate)
+                        mc.close()
+                        
+                        # Create structured response
+                        try:
+                            current_pos_float = float(current_pos) if current_pos != "Motor not connected" else None
+                        except (ValueError, TypeError):
+                            current_pos_float = None
+                            
+                        resp = {
+                            'party': party,
+                            'waveplate': waveplate,
+                            'position': current_pos_float
+                        }
+                        
+                        # Update logging
+                        if cmd == "goto":
+                            self.logger.info(f"Moved {waveplate} to absolute position {position} on {party}. Current position: {current_pos}")
+                        else:
+                            self.logger.info(f"Moved {waveplate} {cmd} by {position} degrees on {party}. Current position: {current_pos}")
+                            
                     except Exception as e:
                         res["error"] = f"Error moving {waveplate} {cmd}: {str(e)}"
                         self.logger.error(f"Error moving {waveplate} {cmd}: {e}")
@@ -780,6 +802,17 @@ def load_config_from_file(fname):
     config = yaml.load(config_fp, Loader=yaml.SafeLoader)
     config_fp.close()
     return config
+
+
+def load_commands_from_file(fname):
+    """Load commands configuration from YAML file with fallback to main config."""
+    try:
+        with open(fname, "r") as config_fp:
+            config = yaml.load(config_fp, Loader=yaml.SafeLoader)
+        return config
+    except FileNotFoundError:
+        # Fallback to main config file if commands.yaml doesn't exist
+        return load_config_from_file("config/polarization.yaml")
 
 
 def write_config_to_file(config, fname="client.yaml"):

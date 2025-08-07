@@ -29,6 +29,14 @@ All configuration is stored in `config/polarization.yaml`:
 - Polarization settings for different experiment modes
 - Service ports and external service endpoints
 
+### Commands Configuration
+
+All available commands are documented in `src/commands.yaml`:
+- Complete command definitions with descriptions
+- Parameter specifications for each command
+- Includes both original and newly implemented commands
+- Used by the `commands` API endpoint to return available commands
+
 ### Caching System
 
 The system uses a sophisticated caching mechanism in `beacon_bridge_optimizations.py`:
@@ -77,8 +85,9 @@ Commands are sent as JSON: `{'cmd': 'command_name', 'params': {optional_paramete
 
 ### New Motor Control Commands
 - `get_motor_info`: Get motor server info and waveplate names for each party
-- `forward`: Move specific waveplate forward by degrees (`party`, `waveplate`, `degrees`)
-- `backward`: Move specific waveplate backward by degrees (`party`, `waveplate`, `degrees`) 
+- `forward`: Move specific waveplate forward by position (`party`, `waveplate`, `position`)
+- `backward`: Move specific waveplate backward by position (`party`, `waveplate`, `position`) 
+- `goto`: Move specific waveplate to absolute position (`party`, `waveplate`, `position`)
 - `positions`: Get current positions of all waveplates for all motors
 - `get_current_path`: Return the currently active polarization path
 
@@ -91,6 +100,7 @@ Most commands support:
 - `src/polarization_server.py`: Main server implementation
 - `src/thorlabs_apt_motor_controller.py`: Motor control client
 - `src/beacon_bridge_optimizations.py`: Optimization algorithms with caching
+- `src/commands.yaml`: Command definitions and documentation
 - `config/polarization.yaml`: Main configuration file
 - `cache/`: Optimization result cache files
 - `logs/`: Server logs
@@ -105,24 +115,33 @@ Most commands support:
 - Returns: `{"alice": {"names": [...], "ip": "...", "port": ...}, "bob": {...}, "source": {...}}`
 
 #### Command 2: `forward`
-**Purpose**: Move specific waveplate forward by given degrees
-- Extract params: `party`, `waveplate`, `degrees`
-- Call `mc.forward(waveplate, degrees)` on appropriate MotorController
-- Example: `{'cmd': 'forward', 'params': {'party': 'alice', 'waveplate': 'alice_qwp_1', 'degrees': 43.0}}`
+**Purpose**: Move specific waveplate forward by given position
+- Extract params: `party`, `waveplate`, `position`
+- Call `mc.forward(waveplate, position)` on appropriate MotorController
+- Returns structured response: `{'party': party, 'waveplate': waveplate, 'position': current_pos}`
+- Example: `{'cmd': 'forward', 'params': {'party': 'alice', 'waveplate': 'alice_qwp_1', 'position': 43.0}}`
 
 #### Command 3: `backward`  
-**Purpose**: Move specific waveplate backward by given degrees
-- Same structure as forward but call `mc.backward(waveplate, degrees)`
-- Extract same params: `party`, `waveplate`, `degrees`
+**Purpose**: Move specific waveplate backward by given position
+- Same structure as forward but call `mc.backward(waveplate, position)`
+- Extract same params: `party`, `waveplate`, `position`
+- Returns structured response with current position after movement
 
-#### Command 4: `positions`
+#### Command 4: `goto` (✅ New)
+**Purpose**: Move specific waveplate to absolute position
+- Extract params: `party`, `waveplate`, `position`
+- Call `mc.goto(waveplate, position)` on appropriate MotorController
+- Returns structured response with current position after movement
+- Example: `{'cmd': 'goto', 'params': {'party': 'source', 'waveplate': 'alice_HWP_1', 'position': 45.0}}`
+
+#### Command 5: `positions`
 **Purpose**: Get current positions of all waveplates for all motors
 - Create method `get_all_positions()` that calls `mc.getAllPos()` for each motor
 - Returns: `{"alice": {"waveplate1": position, ...}, "bob": {...}, "source": {...}}`
 
 ### Path Tracking System (✅ Implemented)
 
-#### Command 5: `get_current_path`
+#### Command 6: `get_current_path`
 **Purpose**: Return the currently active polarization path
 - Returns the stored `self.current_path` variable
 
