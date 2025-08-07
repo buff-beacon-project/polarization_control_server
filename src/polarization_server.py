@@ -197,11 +197,11 @@ class PolarizationServer(ZMQServiceBase):
                         port = self.motorInfo[party]["port"]
                         print(f"Connecting to motor at {ip}:{port} for {party}")
                         mc = self.connect_to_motor(ip, port) 
-                        print(f"Connected to motor at {ip}:{port} for {party}")
+                        print(f"Connected to motor at {ip}:{port} for {party}, {mc.id_dict}")
                         if cmd == "forward":
                             print(f"Moving {waveplate} forward by {degrees} degrees on {party}")
                             resp = mc.forward(waveplate, degrees)
-                            print(f"Finished move")
+                            print(f"Finished move, response: {resp}")
                         elif cmd == "backward":
                             resp = mc.backward(waveplate, degrees)
                         else:
