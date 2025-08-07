@@ -167,8 +167,13 @@ class PolarizationServer(ZMQServiceBase):
                 self.logger.info("Test successful")
 
             elif cmd == "commands":
-                commands_config = load_commands_from_file("src/commands.yaml")
-                resp = commands_config.get("commands", self.config.get("commands", {}))
+                try:
+                    commands_config = load_commands_from_file("src/commands.yaml")
+                    resp = commands_config.get("commands", {})
+                    self.logger.info("Successfully loaded commands from commands.yaml")
+                except Exception as e:
+                    self.logger.error(f"Error loading commands.yaml: {e}")
+                    resp = {"error": f"Could not load commands: {str(e)}"}
 
             elif cmd == "info":
                 resp = {}
@@ -805,14 +810,19 @@ def load_config_from_file(fname):
 
 
 def load_commands_from_file(fname):
-    """Load commands configuration from YAML file with fallback to main config."""
+    """Load commands configuration from YAML file."""
     try:
+        # Try the provided path first
         with open(fname, "r") as config_fp:
             config = yaml.load(config_fp, Loader=yaml.SafeLoader)
         return config
     except FileNotFoundError:
-        # Fallback to main config file if commands.yaml doesn't exist
-        return load_config_from_file("config/polarization.yaml")
+        # Try path relative to this script's directory
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        commands_path = os.path.join(script_dir, "commands.yaml")
+        with open(commands_path, "r") as config_fp:
+            config = yaml.load(config_fp, Loader=yaml.SafeLoader)
+        return config
 
 
 def write_config_to_file(config, fname="client.yaml"):
