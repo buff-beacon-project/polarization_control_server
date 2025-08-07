@@ -183,7 +183,7 @@ class PolarizationServer(ZMQServiceBase):
                 resp = self.get_motor_info()
                 self.logger.info("Retrieved motor information for all parties")
 
-            elif cmd == "forward":
+            elif cmd == "forward" or cmd == "backward":
                 party = params["party"].lower()
                 waveplate = params["waveplate"]
                 degrees = float(params["degrees"])
@@ -195,33 +195,38 @@ class PolarizationServer(ZMQServiceBase):
                     try:
                         ip = self.motorInfo[party]["ip"]
                         port = self.motorInfo[party]["port"]
-                        mc = self.connect_to_motor(ip, port)
-                        resp = mc.forward(waveplate, degrees)
+                        print(f"Connecting to motor at {ip}:{port} for {party}")
+                        mc = self.connect_to_motor(ip, port) 
+                        print(f"Connected to motor at {ip}:{port} for {party}")
+                        if cmd == "forward":
+                            resp = mc.forward(waveplate, degrees)
+                        elif cmd == "backward":
+                            resp = mc.backward(waveplate, degrees)
                         mc.close()
-                        self.logger.info(f"Moved {waveplate} forward by {degrees} degrees on {party}")
+                        self.logger.info(f"Moved {waveplate} {cmd} by {degrees} degrees on {party}")
                     except Exception as e:
-                        res["error"] = f"Error moving {waveplate} forward: {str(e)}"
-                        self.logger.error(f"Error moving {waveplate} forward: {e}")
+                        res["error"] = f"Error moving {waveplate} {cmd}: {str(e)}"
+                        self.logger.error(f"Error moving {waveplate} {cmd}: {e}")
 
-            elif cmd == "backward":
-                party = params["party"].lower()
-                waveplate = params["waveplate"]
-                degrees = float(params["degrees"])
+            # elif cmd == "backward":
+            #     party = params["party"].lower()
+            #     waveplate = params["waveplate"]
+            #     degrees = float(params["degrees"])
                 
-                if party not in self.motorInfo:
-                    res["error"] = f"Invalid party: {party}"
-                    self.logger.error(f"Invalid party: {party}")
-                else:
-                    try:
-                        ip = self.motorInfo[party]["ip"]
-                        port = self.motorInfo[party]["port"]
-                        mc = self.connect_to_motor(ip, port)
-                        resp = mc.backward(waveplate, degrees)
-                        mc.close()
-                        self.logger.info(f"Moved {waveplate} backward by {degrees} degrees on {party}")
-                    except Exception as e:
-                        res["error"] = f"Error moving {waveplate} backward: {str(e)}"
-                        self.logger.error(f"Error moving {waveplate} backward: {e}")
+            #     if party not in self.motorInfo:
+            #         res["error"] = f"Invalid party: {party}"
+            #         self.logger.error(f"Invalid party: {party}")
+            #     else:
+            #         try:
+            #             ip = self.motorInfo[party]["ip"]
+            #             port = self.motorInfo[party]["port"]
+            #             mc = self.connect_to_motor(ip, port)
+            #             resp = mc.backward(waveplate, degrees)
+            #             mc.close()
+            #             self.logger.info(f"Moved {waveplate} backward by {degrees} degrees on {party}")
+            #         except Exception as e:
+            #             res["error"] = f"Error moving {waveplate} backward: {str(e)}"
+            #             self.logger.error(f"Error moving {waveplate} backward: {e}")
 
             elif cmd == "positions":
                 resp = self.get_all_positions()
