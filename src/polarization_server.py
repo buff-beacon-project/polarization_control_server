@@ -202,7 +202,9 @@ class PolarizationServer(ZMQServiceBase):
                             resp = mc.forward(waveplate, degrees)
                         elif cmd == "backward":
                             resp = mc.backward(waveplate, degrees)
-                        mc.close()
+                        else:
+                            resp = f"Invalid command, {cmd}"
+                        # mc.close()
                         self.logger.info(f"Moved {waveplate} {cmd} by {degrees} degrees on {party}")
                     except Exception as e:
                         res["error"] = f"Error moving {waveplate} {cmd}: {str(e)}"
