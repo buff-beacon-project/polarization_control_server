@@ -53,9 +53,13 @@ class PolarizationServer(ZMQServiceBase):
         )
 
         self.motorInfo = config["motor_servers"]
+        self.current_path = None
         self.logger.info("")
         self.logger.info(f"Polarization server Started at {self.time_start}")
         self.logger.info(f"Config: {config}")
+
+        # Load last path from logs during startup
+        self.load_last_path_from_logs()
 
         # self.get_positions()
 
@@ -90,6 +94,9 @@ class PolarizationServer(ZMQServiceBase):
             if cmd == "set_polarization":
                 setting = str(params["setting"]).lower()
                 resp = self.set_polarization(self.config, **params)
+                # Track current path and log the change
+                self.current_path = setting
+                self.logger.info(f"Current polarization path set to: {setting}")
 
             elif cmd == "calibrate":
                 party = params["party"].lower()
@@ -172,6 +179,58 @@ class PolarizationServer(ZMQServiceBase):
                 resp["settings"] = self.config["settings"]
                 resp["uptime"] = str(datetime.now() - self.time_start)
 
+            elif cmd == "get_motor_info":
+                resp = self.get_motor_info()
+                self.logger.info("Retrieved motor information for all parties")
+
+            elif cmd == "forward":
+                party = params["party"].lower()
+                waveplate = params["waveplate"]
+                degrees = float(params["degrees"])
+                
+                if party not in self.motorInfo:
+                    res["error"] = f"Invalid party: {party}"
+                    self.logger.error(f"Invalid party: {party}")
+                else:
+                    try:
+                        ip = self.motorInfo[party]["ip"]
+                        port = self.motorInfo[party]["port"]
+                        mc = self.connect_to_motor(ip, port)
+                        resp = mc.forward(waveplate, degrees)
+                        mc.close()
+                        self.logger.info(f"Moved {waveplate} forward by {degrees} degrees on {party}")
+                    except Exception as e:
+                        res["error"] = f"Error moving {waveplate} forward: {str(e)}"
+                        self.logger.error(f"Error moving {waveplate} forward: {e}")
+
+            elif cmd == "backward":
+                party = params["party"].lower()
+                waveplate = params["waveplate"]
+                degrees = float(params["degrees"])
+                
+                if party not in self.motorInfo:
+                    res["error"] = f"Invalid party: {party}"
+                    self.logger.error(f"Invalid party: {party}")
+                else:
+                    try:
+                        ip = self.motorInfo[party]["ip"]
+                        port = self.motorInfo[party]["port"]
+                        mc = self.connect_to_motor(ip, port)
+                        resp = mc.backward(waveplate, degrees)
+                        mc.close()
+                        self.logger.info(f"Moved {waveplate} backward by {degrees} degrees on {party}")
+                    except Exception as e:
+                        res["error"] = f"Error moving {waveplate} backward: {str(e)}"
+                        self.logger.error(f"Error moving {waveplate} backward: {e}")
+
+            elif cmd == "positions":
+                resp = self.get_all_positions()
+                self.logger.info("Retrieved all motor positions")
+
+            elif cmd == "get_current_path":
+                resp = {"current_path": self.current_path}
+                self.logger.info(f"Current path requested: {self.current_path}")
+
             else:
                 res["error"] = "Invalid Command"
 
@@ -210,8 +269,101 @@ class PolarizationServer(ZMQServiceBase):
 
     #############
 
+    def load_last_path_from_logs(self):
+        """Load the last polarization path from log files during startup."""
+        logs_dir = "logs"
+        if not os.path.exists(logs_dir):
+            self.logger.info("No logs directory found, current_path remains None")
+            return
+        
+        # Get all log files sorted by modification time (newest first)
+        log_files = []
+        for file in os.listdir(logs_dir):
+            if file.endswith(".log"):
+                file_path = os.path.join(logs_dir, file)
+                log_files.append((file_path, os.path.getmtime(file_path)))
+        
+        log_files.sort(key=lambda x: x[1], reverse=True)
+        
+        # Search through log files for the most recent path setting
+        for file_path, _ in log_files:
+            try:
+                with open(file_path, 'r') as f:
+                    lines = f.readlines()
+                    # Search from end to beginning for most recent entry
+                    for line in reversed(lines):
+                        if "Current polarization path set to:" in line:
+                            # Extract path name from log line
+                            parts = line.split("Current polarization path set to:")
+                            if len(parts) > 1:
+                                path_name = parts[1].strip()
+                                self.current_path = path_name
+                                self.logger.info(f"Loaded last path from logs: {path_name}")
+                                return
+            except Exception as e:
+                self.logger.warning(f"Error reading log file {file_path}: {e}")
+                continue
+        
+        self.logger.info("No previous polarization path found in logs, current_path remains None")
+
     def connect_to_motor(self, ip: str, port: int):
         return MotorController(ip, port)
+
+    def get_motor_info(self):
+        """Get motor server information including waveplate names for each party."""
+        motor_info = {}
+        
+        for party in self.motorInfo:
+            try:
+                ip = self.motorInfo[party]["ip"]
+                port = self.motorInfo[party]["port"]
+                mc = self.connect_to_motor(ip, port)
+                
+                # Get waveplate names from motor controller's id_dict
+                waveplate_names = list(mc.id_dict.keys())
+                
+                motor_info[party] = {
+                    "names": waveplate_names,
+                    "ip": ip,
+                    "port": port
+                }
+                
+                mc.close()
+                self.logger.info(f"Retrieved motor info for {party}: {len(waveplate_names)} waveplates")
+                
+            except Exception as e:
+                self.logger.error(f"Failed to connect to {party} motor at {ip}:{port}: {e}")
+                motor_info[party] = {
+                    "names": [],
+                    "ip": ip,
+                    "port": port,
+                    "error": str(e)
+                }
+        
+        return motor_info
+
+    def get_all_positions(self):
+        """Get current positions of all waveplates for all motor servers."""
+        all_positions = {}
+        
+        for party in self.motorInfo:
+            try:
+                ip = self.motorInfo[party]["ip"]
+                port = self.motorInfo[party]["port"]
+                mc = self.connect_to_motor(ip, port)
+                
+                # Get all positions from this motor controller
+                positions = mc.getAllPos()
+                all_positions[party] = positions
+                
+                mc.close()
+                self.logger.info(f"Retrieved positions for {party}: {len(positions)} waveplates")
+                
+            except Exception as e:
+                self.logger.error(f"Failed to get positions from {party} motor at {ip}:{port}: {e}")
+                all_positions[party] = {"error": str(e)}
+        
+        return all_positions
 
     def home(self, ip: str, port: int):
         old_health_fail_threshold = self.health_fail_threshold
