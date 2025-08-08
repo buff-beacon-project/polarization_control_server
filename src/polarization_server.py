@@ -120,6 +120,9 @@ class PolarizationServer(ZMQServiceBase):
                     params["angles"] = angles
                 self.logger.info(f"Setting PC angles to: {params['angles']}")
                 resp = self.set_ch_waveplates(self.config, **params)
+                # Track current path and log the change
+                self.current_path = "Bell angles"
+                self.logger.info(f"Current polarization path set to: Bell angles")
 
             elif cmd == "set_power":
                 power = float(params["power"])
